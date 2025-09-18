@@ -45,9 +45,9 @@ logging.basicConfig(level=logging.ERROR)
 load_dotenv()
 
 app = Flask(__name__)  
-app.secret_key = os.getenv('SECRET_KEY')
+app.secret_key = os.getenv('MEDICAL_MASTER_KEY')
 if not app.secret_key:
-    raise RuntimeError("SECRET_KEY is not set. Please configure it in your .env file before running the app.")
+    raise RuntimeError("MEDICAL_MASTER_KEY is not set. Please configure it in your .env file before running the app.")
 crypto = MedicalCrypto()
 
 DB_HOST = os.getenv('DB_HOST')
