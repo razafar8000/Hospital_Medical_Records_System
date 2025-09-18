@@ -39,12 +39,24 @@ from flask import flash
 from crypto_utils import MedicalCrypto
 import os
 from dotenv import load_dotenv
+import logging
+logging.basicConfig(level=logging.ERROR)
 
 load_dotenv()
 
 app = Flask(__name__)  
-app.secret_key = os.getenv('SECRET_KEY', '6uuV7rruk5iIEZ3u4s4UyrHBkO6n7CBCwc7pjId6mb8=')
+app.secret_key = os.getenv('SECRET_KEY')
+if not app.secret_key:
+    raise RuntimeError("SECRET_KEY is not set. Please configure it in your .env file before running the app.")
 crypto = MedicalCrypto()
+
+DB_HOST = os.getenv('DB_HOST')
+DB_NAME = os.getenv('DB_NAME')
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+
+if not all([DB_HOST, DB_NAME, DB_USER, DB_PASSWORD]):
+    raise RuntimeError("Database environment variables are not set. Please configure .env before running.")
 
 # Homepage route
 @app.route('/')
@@ -55,14 +67,14 @@ def index():
 def get_db_connection():
     try:
         conn = psycopg2.connect(
-            host=os.getenv('DB_HOST', 'localhost'),
-            database=os.getenv('DB_NAME', 'medical_records'),
-            user=os.getenv('DB_USER', 'postgres'),
-            password=os.getenv('DB_PASSWORD', 'admin123')
+            host=DB_HOST,
+            database=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD
         )
         return conn
     except psycopg2.Error as e:
-        print(f"Database connection error: {e}")
+        logging.error(f"Database connection error: {e}")
         return None
 
 
