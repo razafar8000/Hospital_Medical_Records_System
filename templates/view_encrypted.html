@@ -1,0 +1,253 @@
+<!--
+==============================================================================
+ENCRYPTED DATA VISUALIZATION INTERFACE (ADMIN)
+==============================================================================
+Purpose: Admin interface to view encrypted and decrypted patient data
+Features: Side-by-side data display, copy functionality, security demonstration
+==============================================================================
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Encrypted Data</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(to bottom right, #f0f2f5, #ffffff);
+            padding: 2rem;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .role-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            background: rgba(88, 86, 214, 0.1);
+            color: #5856D6;
+        }
+
+        .data-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border-radius: 16px;
+            background: #f5f5f7;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            color: #1d1d1f;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .section-header i {
+            color: #5856D6;
+        }
+
+        .encrypted-data {
+            background: #1d1d1f;
+            color: #2FD058;
+            padding: 1.5rem;
+            border-radius: 12px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 0.9rem;
+            overflow-wrap: break-word;
+            position: relative;
+        }
+
+        .copy-button {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            padding: 0.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .copy-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .patient-data {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+        }
+
+        .data-field {
+            padding: 1rem;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .field-label {
+            font-size: 0.9rem;
+            color: #86868b;
+            margin-bottom: 0.3rem;
+        }
+
+        .field-value {
+            color: #1d1d1f;
+            font-weight: 500;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #5856D6;
+            text-decoration: none;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(88, 86, 214, 0.1);
+        }
+
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            background: rgba(47, 208, 88, 0.1);
+            color: #2FD058;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Encrypted Data View</h1>
+        <div class="role-badge">
+            <i class="fas fa-user-shield"></i>
+            <span>{{ role }}</span>
+        </div>
+    </div>
+
+    <div class="data-container">
+        <div class="section">
+            <div class="section-header">
+                <i class="fas fa-user"></i>
+                Patient: {{ patient.name }}
+                <div class="security-badge">
+                    <i class="fas fa-shield-alt"></i>
+                    AES-256-GCM Protected
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <i class="fas fa-lock"></i>
+                Encrypted Data
+            </div>
+            <div class="encrypted-data">
+                <button class="copy-button" onclick="copyEncrypted()">
+                    <i class="fas fa-copy"></i>
+                </button>
+                {{ patient.encrypted_string if patient.encrypted_string else "No encrypted data" }}
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <i class="fas fa-unlock"></i>
+                Decrypted Data
+            </div>
+            {% if decrypted_data %}
+            <div class="patient-data">
+                <div class="data-field">
+                    <div class="field-label">Name</div>
+                    <div class="field-value">{{ decrypted_data.name }}</div>
+                </div>
+                <div class="data-field">
+                    <div class="field-label">Date of Birth</div>
+                    <div class="field-value">{{ decrypted_data.dob }}</div>
+                </div>
+                <div class="data-field">
+                    <div class="field-label">Address</div>
+                    <div class="field-value">{{ decrypted_data.address or 'Not provided' }}</div>
+                </div>
+                <div class="data-field">
+                    <div class="field-label">Phone</div>
+                    <div class="field-value">{{ decrypted_data.phone or 'Not provided' }}</div>
+                </div>
+                <div class="data-field">
+                    <div class="field-label">Diagnosis</div>
+                    <div class="field-value">{{ decrypted_data.diagnosis }}</div>
+                </div>
+                <div class="data-field">
+                    <div class="field-label">Treatment</div>
+                    <div class="field-value">{{ decrypted_data.treatment }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="data-field">
+                <div class="field-value">No data to decrypt</div>
+            </div>
+            {% endif %}
+        </div>
+
+        <a href="{{ url_for('patients', role=role) }}" class="back-link">
+            <i class="fas fa-arrow-left"></i>
+            Back to Patients List
+        </a>
+    </div>
+
+    <script>
+        function copyEncrypted() {
+            const encryptedText = `{{ patient.encrypted_string if patient.encrypted_string else "" }}`;
+            navigator.clipboard.writeText(encryptedText);
+            const button = document.querySelector('.copy-button');
+            button.innerHTML = '<i class="fas fa-check"></i>';
+            setTimeout(() => {
+                button.innerHTML = '<i class="fas fa-copy"></i>';
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

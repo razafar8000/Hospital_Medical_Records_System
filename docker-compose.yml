@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15
+    container_name: medical_records_db
+    environment:
+      POSTGRES_DB: medical_records
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: newpassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    networks:
+      - medical_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Flask Application
+  web:
+    build: .
+    container_name: medical_records_app
+    environment:
+      - FLASK_ENV=production
+      - DB_HOST=host.docker.internal 
+      - DB_NAME=medical_records
+      - DB_USER=postgres
+      - DB_PASSWORD=newpassword
+      - MEDICAL_MASTER_KEY=your-very-secure-master-key-here
+    ports:
+      - "5000:5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - medical_network
+    volumes:
+      - ./salt.key:/app/salt.key
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  medical_network:
+    driver: bridge

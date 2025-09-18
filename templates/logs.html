@@ -1,0 +1,208 @@
+<!--
+==============================================================================
+AUDIT LOG VISUALIZATION INTERFACE (ADMIN)
+==============================================================================
+Purpose: Comprehensive audit trail viewer for system activity monitoring
+Features: Chronological logs, action icons, role badges, compliance tracking
+==============================================================================
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Audit Logs</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(to bottom right, #f0f2f5, #ffffff);
+            padding: 2rem;
+            color: #1d1d1f;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem 2rem;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .role-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 500;
+            background: rgba(88, 86, 214, 0.1);
+            color: #5856D6;
+        }
+
+        .logs-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .log-entry {
+            display: flex;
+            align-items: flex-start;
+            padding: 1.2rem;
+            margin-bottom: 1rem;
+            background: #fff;
+            border-radius: 12px;
+            transition: transform 0.2s ease;
+            border: 1px solid #e5e5e7;
+        }
+
+        .log-entry:hover {
+            transform: translateX(4px);
+        }
+
+        .log-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* Action-specific colors */
+        .action-add {
+            background: rgba(52, 199, 89, 0.1);
+            color: #34C759;
+        }
+
+        .action-edit {
+            background: rgba(0, 122, 255, 0.1);
+            color: #007AFF;
+        }
+
+        .action-delete {
+            background: rgba(255, 59, 48, 0.1);
+            color: #FF3B30;
+        }
+
+        .action-update {
+            background: rgba(255, 149, 0, 0.1);
+            color: #FF9500;
+        }
+
+        .log-content {
+            flex-grow: 1;
+        }
+
+        .log-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .log-title {
+            font-weight: 500;
+            color: #1d1d1f;
+            font-size: 1rem;
+        }
+
+        .log-timestamp {
+            font-size: 0.9rem;
+            color: #86868b;
+        }
+
+        .log-details {
+            color: #484848;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .role-pill {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .role-doctor {
+            background: rgba(0, 122, 255, 0.1);
+            color: #007AFF;
+        }
+
+        .role-nurse {
+            background: rgba(255, 59, 48, 0.1);
+            color: #FF3B30;
+        }
+
+        .role-admin {
+            background: rgba(88, 86, 214, 0.1);
+            color: #5856D6;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #5856D6;
+            text-decoration: none;
+            padding: 0.8rem 1rem;
+            border-radius: 12px;
+            margin-top: 1.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(88, 86, 214, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Audit Logs</h1>
+        <div class="role-badge">
+            <i class="fas fa-user-shield"></i>
+            <span>{{ role }}</span>
+        </div>
+    </div>
+
+    <div class="logs-container">
+        {% for log in logs %}
+        <div class="log-entry">
+            <div class="log-icon {{ 'action-add' if 'Add' in log.action else 'action-edit' if 'Edit' in log.action else 'action-delete' if 'Delete' in log.action else 'action-update' }}">
+                <i class="fas {{ 'fa-plus' if 'Add' in log.action else 'fa-edit' if 'Edit' in log.action else 'fa-trash' if 'Delete' in log.action else 'fa-sync' }}"></i>
+            </div>
+            <div class="log-content">
+                <div class="log-header">
+                    <span class="log-title">{{ log.action }}</span>
+                    <span class="log-timestamp">{{ log.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+                </div>
+                <div class="log-details">{{ log.details }}</div>
+                <div class="role-pill role-{{ log.role.lower() }}">{{ log.role }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <a href="{{ url_for('patients', role=role) }}" class="back-link">
+        <i class="fas fa-arrow-left"></i>
+        Back to Patients List
+    </a>
+</body>
+</html>
