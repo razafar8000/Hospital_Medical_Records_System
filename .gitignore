@@ -1,4 +1,5 @@
 .env
+encryption.key
 salt.key
 *.pyc
 __pycache__/
